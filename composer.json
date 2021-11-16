@@ -1,23 +1,14 @@
 {
-  "name": "creativeorange/sharefile-api",
+  "name": "demchenkooleh/sharefile-api",
   "description": "A minimal implementation of ShareFile Api",
   "keywords": [
-    "kapersoft",
     "sharefile-api",
     "sharefile",
     "api",
     "php"
   ],
-  "homepage": "https://github.com/kapersoft/sharefile-api",
+  "homepage": "https://github.com/demchenkooleh/sharefile-api",
   "license": "MIT",
-  "authors": [
-    {
-      "name": "Jan Willem Kaper",
-      "email": "kapersoft@gmail.com",
-      "homepage": "https://kapersoft.com",
-      "role": "Developer"
-    }
-  ],
   "require": {
     "php": "^7.0|^8.0",
     "guzzlehttp/guzzle": "^7.0.1"
