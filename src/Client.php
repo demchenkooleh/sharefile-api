@@ -413,7 +413,7 @@ class Client
         }
 
         $chunkUri = $this->getChunkUri('streamed', $filename, $folderId, $unzip, $overwrite, $notify, true, $stream);
-        $chunkSize = $chunkSize ?? SELF::DEFAULT_CHUNK_SIZE;
+        $chunkSize = $chunkSize ?? (int)self::DEFAULT_CHUNK_SIZE;
         $index = 0;
 
         // First Chunk
@@ -444,7 +444,7 @@ class Client
                 'index' => $index,
                 'byteOffset' => $index * $chunkSize,
                 'hash' => md5($data),
-                'filehash' => hash(Utils::streamFor($stream), 'md5'),
+                'filehash' => Utils::hash(Utils::streamFor($stream), 'md5'),
                 'finish' => true,
             ]
         );
