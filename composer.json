@@ -11,8 +11,8 @@
   "license": "MIT",
   "require": {
     "php": "^7.4|^8.0",
-    "guzzlehttp/guzzle": "^7.0.1",
-      "ext-json": "*"
+    "guzzlehttp/guzzle": "^6.3",
+    "ext-json": "*"
   },
   "require-dev": {
     "larapack/dd": "^1.1",
