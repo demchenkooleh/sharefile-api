@@ -1,6 +1,6 @@
 <?php
 
-namespace Kapersoft\Sharefile;
+namespace Citrix\Sharefile;
 
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
@@ -8,16 +8,8 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7;
-use Kapersoft\Sharefile\Exceptions\BadRequest;
+use Citrix\Sharefile\Exceptions\BadRequest;
 
-/**
- * Class Client.
- *
- * @author   Jan Willem Kaper <kapersoft@gmail.com>
- * @license  MIT (see License.txt)
- *
- * @link     http://github.com/kapersoft/sharefile-api
- */
 class Client
 {
     /**

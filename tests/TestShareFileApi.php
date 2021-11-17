@@ -1,29 +1,21 @@
 <?php
 
-namespace Kapersoft\Sharefile\Test;
+namespace Citrix\Sharefile\Test;
 
 use org\bovigo\vfs\vfsStream;
-use Kapersoft\Sharefile\Client;
+use Citrix\Sharefile\Client;
 use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStreamFile;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
-use Kapersoft\Sharefile\Exceptions\BadRequest;
+use Citrix\Sharefile\Exceptions\BadRequest;
 
-/**
- * Class TestClient.
- *
- * @author   Jan Willem Kaper <kapersoft@gmail.com>
- * @license  MIT (see License.txt)
- *
- * @link     http://github.com/kapersoft/sharefile-api
- */
 class TestShareFileApi extends TestCase
 {
     /**
      * Mock Guzzle client.
      *
-     * @var \Kapersoft\ShareFile\Client
+     * @var \Citrix\ShareFile\Client
      */
     protected $client;
 

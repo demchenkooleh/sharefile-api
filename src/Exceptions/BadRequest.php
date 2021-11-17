@@ -1,18 +1,10 @@
 <?php
 
-namespace Kapersoft\Sharefile\Exceptions;
+namespace Citrix\Sharefile\Exceptions;
 
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 
-/**
- * Class BadRequest.
- *
- * @author   Jan Willem Kaper <kapersoft@gmail.com>
- * @license  MIT (see License.txt)
- *
- * @link     http://github.com/kapersoft/sharefile-api
- */
 class BadRequest extends Exception
 {
     /**

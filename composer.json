@@ -20,12 +20,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Kapersoft\\Sharefile\\": "src"
+      "Citrix\\Sharefile\\": "src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Kapersoft\\Sharefile\\Test\\": "tests"
+      "Citrix\\Sharefile\\Test\\": "tests"
     }
   },
   "scripts": {

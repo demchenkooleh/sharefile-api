@@ -1,28 +1,18 @@
 <?php
 
-namespace Kapersoft\Sharefile\Test;
+namespace Citrix\Sharefile\Test;
 
 use GuzzleHttp\Middleware;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use org\bovigo\vfs\vfsStream;
-use Kapersoft\Sharefile\Client;
+use Citrix\Sharefile\Client;
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Exception\ClientException;
 use org\bovigo\vfs\content\LargeFileContent;
 
-/**
- * Class TestClient.
- *
- * @category GitHub_Repositories
- *
- * @author   Jan Willem Kaper <kapersoft@gmail.com>
- * @license  MIT (see License.txt)
- *
- * @link     http://github.com/kapersoft/sharefile-api
- */
 class TestClient extends TestCase
 {
     /**
