@@ -10,13 +10,14 @@
   "homepage": "https://github.com/demchenkooleh/sharefile-api",
   "license": "MIT",
   "require": {
-    "php": "^7.0|^8.0",
-    "guzzlehttp/guzzle": "^7.0.1"
+    "php": "^7.4|^8.0",
+    "guzzlehttp/guzzle": "^7.0.1",
+      "ext-json": "*"
   },
   "require-dev": {
-    "larapack/dd": "1.*",
+    "larapack/dd": "^1.1",
     "mikey179/vfsstream": "^1.6",
-    "phpunit/phpunit": "^6.4"
+    "phpunit/phpunit": "^9.5"
   },
   "autoload": {
     "psr-4": {

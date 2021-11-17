@@ -148,7 +148,6 @@ class TestShareFileApi extends TestCase
     public function it_can_get_user() // @codingStandardsIgnoreLine
     {
         $response = $this->getClient()->getUser();
-//        print_r($response);
 
         $this->assertEquals('ShareFile.Api.Models.AccountUser', $response['odata.type']);
         $this->assertArrayHasKey('Email', $response);
@@ -169,7 +168,6 @@ class TestShareFileApi extends TestCase
         }
 
         $response = $this->getClient()->getItemById($itemId, false);
-//        print_r($response);
 
         $this->assertEquals('ShareFile.Api.Models.Folder', $response['odata.type']);
         $this->assertEquals($itemId, $response['Id']);

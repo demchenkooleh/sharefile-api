@@ -7,53 +7,34 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7;
 use Citrix\Sharefile\Exceptions\BadRequest;
+use GuzzleHttp\Psr7\Utils;
 
 class Client
 {
-    /**
-     * ShareFile token.
-     *
-     * @var array
-     */
-    public $token;
+    public array $token;
 
-    /**
-     * Guzzle Client.
-     *
-     * @var \GuzzleHttp\Client
-     */
-    public $client;
+    public GuzzleClient $client;
 
-    /**
-     * Thumbnail size.
-     */
-    const THUMBNAIL_SIZE_M = 75;
-    const THUMBNAIL_SIZE_L = 600;
+    public const THUMBNAIL_SIZE_M = 75;
+    public const THUMBNAIL_SIZE_L = 600;
 
-    /*
-     * ShareFile Folder
-     */
-    const FOLDER_TOP = 'top';
-    const FOLDER_HOME = 'home';
-    const FOLDER_FAVORITES = 'favorites';
-    const FOLDER_ALLSHARED = 'allshared';
+    public const FOLDER_TOP = 'top';
+    public const FOLDER_HOME = 'home';
+    public const FOLDER_FAVORITES = 'favorites';
+    public const FOLDER_ALLSHARED = 'allshared';
 
-    /*
-    * Default Chunk Size for uploading files
-    */
-    const DEFAULT_CHUNK_SIZE = 8 * 1024 * 1024; // 8 megabytes
+    public const DEFAULT_CHUNK_SIZE = 8 * 1024 * 1024; // 8 megabytes
 
     /**
      * Client constructor.
      *
-     * @param  string  $hostname  ShareFile hostname
-     * @param  string  $client_id  OAuth2 client_id
-     * @param  string  $client_secret  OAuth2 client_secret
-     * @param  string  $username  ShareFile username
-     * @param  string  $password  ShareFile password
-     * @param  MockHandler|HandlerStack  $handler  Guzzle Handler
+     * @param string $hostname ShareFile hostname
+     * @param string $client_id OAuth2 client_id
+     * @param string $client_secret OAuth2 client_secret
+     * @param string $username ShareFile username
+     * @param string $password ShareFile password
+     * @param MockHandler|HandlerStack $handler Guzzle Handler
      *
      * @throws Exception
      */
@@ -85,12 +66,12 @@ class Client
     /**
      * ShareFile authentication using username/password.
      *
-     * @param  string  $hostname  ShareFile hostname
-     * @param  string  $client_id  OAuth2 client_id
-     * @param  string  $client_secret  OAuth2 client_secret
-     * @param  string  $username  ShareFile username
-     * @param  string  $password  ShareFile password
-     * @param  MockHandler|HandlerStack  $handler  Guzzle Handler
+     * @param string $hostname ShareFile hostname
+     * @param string $client_id OAuth2 client_id
+     * @param string $client_secret OAuth2 client_secret
+     * @param string $username ShareFile username
+     * @param string $password ShareFile password
+     * @param MockHandler|HandlerStack $handler Guzzle Handler
      *
      * @return array
      * @throws Exception
@@ -107,11 +88,11 @@ class Client
         $uri = "https://{$hostname}/oauth/token";
 
         $parameters = [
-            'grant_type'    => 'password',
-            'client_id'     => $client_id,
+            'grant_type' => 'password',
+            'client_id' => $client_id,
             'client_secret' => $client_secret,
-            'username'      => $username,
-            'password'      => $password,
+            'username' => $username,
+            'password' => $password,
         ];
 
         try {
@@ -124,17 +105,16 @@ class Client
             throw $exception;
         }
 
-        if ($response->getStatusCode() == '200') {
-            return json_decode($response->getBody(), true);
-        } else {
-            throw new Exception('Authentication error', $response->getStatusCode());
+        if ($response->getStatusCode() === 200) {
+            return json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
         }
+        throw new Exception('Authentication error', $response->getStatusCode());
     }
 
     /**
      * Get user details.
      *
-     * @param  string  $userId  ShareFile user id (optional)
+     * @param string $userId ShareFile user id (optional)
      *
      * @return array
      */
@@ -146,10 +126,10 @@ class Client
     /**
      * Create a folder.
      *
-     * @param  string  $parentId  Id of the parent folder
-     * @param  string  $name  Name
-     * @param  string  $description  Description
-     * @param  bool  $overwrite  Overwrite folder
+     * @param string $parentId Id of the parent folder
+     * @param string $name Name
+     * @param string $description Description
+     * @param bool $overwrite Overwrite folder
      *
      * @return array
      */
@@ -161,13 +141,13 @@ class Client
     ): array {
         $parameters = $this->buildHttpQuery(
             [
-                'overwrite'   => $overwrite,
+                'overwrite' => $overwrite,
                 'passthrough' => false,
             ]
         );
 
         $data = [
-            'name'        => $name,
+            'name' => $name,
             'description' => $description,
         ];
 
@@ -177,8 +157,8 @@ class Client
     /**
      * Get Folder/File using Id.
      *
-     * @param  string  $itemId  Item id
-     * @param  bool  $getChildren  Include children
+     * @param string $itemId Item id
+     * @param bool $getChildren Include children
      *
      * @return array
      */
@@ -192,8 +172,8 @@ class Client
     /**
      * Get Folder/File using path.
      *
-     * @param  string  $path  Path
-     * @param  string  $itemId  Id of the root folder (optional)
+     * @param string $path Path
+     * @param string $itemId Id of the root folder (optional)
      *
      * @return array
      */
@@ -209,7 +189,7 @@ class Client
     /**
      * Get breadcrumps of an item.
      *
-     * @param  string  $itemId  Item Id
+     * @param string $itemId Item Id
      *
      * @return array
      */
@@ -221,9 +201,9 @@ class Client
     /**
      * Copy an item.
      *
-     * @param  string  $targetId  Id of the target folder
-     * @param  string  $itemId  Id of the copied item
-     * @param  bool  $overwrite  Indicates whether items with the same name will be overwritten or not (optional)
+     * @param string $targetId Id of the target folder
+     * @param string $itemId Id of the copied item
+     * @param bool $overwrite Indicates whether items with the same name will be overwritten or not (optional)
      *
      * @return array
      */
@@ -231,7 +211,7 @@ class Client
     {
         $parameters = $this->buildHttpQuery(
             [
-                'targetid'  => $targetId,
+                'targetid' => $targetId,
                 'overwrite' => $overwrite,
             ]
         );
@@ -242,10 +222,10 @@ class Client
     /**
      * Update an item.
      *
-     * @param  string  $itemId  Id of the item
-     * @param  array  $data  New data
-     * @param  bool  $forceSync  Indicates whether operation is to be executed synchronously (optional)
-     * @param  bool  $notify  Indicates whether an email should be sent to users subscribed to Upload Notifications (optional)
+     * @param string $itemId Id of the item
+     * @param array $data New data
+     * @param bool $forceSync Indicates whether operation is to be executed synchronously (optional)
+     * @param bool $notify Indicates whether an email should be sent to users subscribed to Upload Notifications (optional)
      *
      * @return array
      */
@@ -254,7 +234,7 @@ class Client
         $parameters = $this->buildHttpQuery(
             [
                 'forceSync' => $forceSync,
-                'notify'    => $notify,
+                'notify' => $notify,
             ]
         );
 
@@ -264,9 +244,9 @@ class Client
     /**
      * Delete an item.
      *
-     * @param  string  $itemId  Item id
-     * @param  bool  $singleversion  True it will delete only the specified version rather than all sibling files with the same filename (optional)
-     * @param  bool  $forceSync  True will block the operation from taking place asynchronously (optional)
+     * @param string $itemId Item id
+     * @param bool $singleversion True it will delete only the specified version rather than all sibling files with the same filename (optional)
+     * @param bool $forceSync True will block the operation from taking place asynchronously (optional)
      *
      * @return string
      */
@@ -275,7 +255,7 @@ class Client
         $parameters = $this->buildHttpQuery(
             [
                 'singleversion' => $singleversion,
-                'forceSync'     => $forceSync,
+                'forceSync' => $forceSync,
             ]
         );
 
@@ -285,8 +265,8 @@ class Client
     /**
      * Get temporary download URL for an item.
      *
-     * @param  string  $itemId  Item id
-     * @param  bool  $includeallversions  For folder downloads only, includes old versions of files in the folder in the zip when true, current versions only when false (default)
+     * @param string $itemId Item id
+     * @param bool $includeallversions For folder downloads only, includes old versions of files in the folder in the zip when true, current versions only when false (default)
      *
      * @return array
      */
@@ -295,7 +275,7 @@ class Client
         $parameters = $this->buildHttpQuery(
             [
                 'includeallversions' => $includeallversions,
-                'redirect'           => false,
+                'redirect' => false,
             ]
         );
 
@@ -305,8 +285,8 @@ class Client
     /**
      * Get contents of and item.
      *
-     * @param  string  $itemId  Item id
-     * @param  bool  $includeallversions  $includeallversions For folder downloads only, includes old versions of files in the folder in the zip when true, current versions only when false (default)
+     * @param string $itemId Item id
+     * @param bool $includeallversions $includeallversions For folder downloads only, includes old versions of files in the folder in the zip when true, current versions only when false (default)
      *
      * @return mixed
      */
@@ -315,7 +295,7 @@ class Client
         $parameters = $this->buildHttpQuery(
             [
                 'includeallversions' => $includeallversions,
-                'redirect'           => true,
+                'redirect' => true,
             ]
         );
 
@@ -325,14 +305,14 @@ class Client
     /**
      * Get the Chunk Uri to start a file-upload.
      *
-     * @param  string  $method  Upload method (Standard or Streamed)
-     * @param  string  $filename  Name of file
-     * @param  string  $folderId  Id of the parent folder
-     * @param  bool  $unzip  Indicates that the upload is a Zip file, and contents must be extracted at the end of upload. The resulting files and directories will be placed in the target folder. If set to false, the ZIP file is uploaded as a single file. Default is false (optional)
-     * @param  bool  $overwrite  Indicates whether items with the same name will be overwritten or not (optional)
-     * @param  bool  $notify  Indicates whether users will be notified of this upload - based on folder preferences (optional)
-     * @param  bool  $raw  Send contents contents directly in the POST body (=true) or send contents in MIME format (=false) (optional)
-     * @param  resource  $stream  Resource stream of the contents (optional)
+     * @param string $method Upload method (Standard or Streamed)
+     * @param string $filename Name of file
+     * @param string $folderId Id of the parent folder
+     * @param bool $unzip Indicates that the upload is a Zip file, and contents must be extracted at the end of upload. The resulting files and directories will be placed in the target folder. If set to false, the ZIP file is uploaded as a single file. Default is false (optional)
+     * @param bool $overwrite Indicates whether items with the same name will be overwritten or not (optional)
+     * @param bool $notify Indicates whether users will be notified of this upload - based on folder preferences (optional)
+     * @param bool $raw Send contents contents directly in the POST body (=true) or send contents in MIME format (=false) (optional)
+     * @param resource $stream Resource stream of the contents (optional)
      *
      * @return array
      */
@@ -348,20 +328,20 @@ class Client
     ): array {
         $parameters = $this->buildHttpQuery(
             [
-                'method'                => $method,
-                'raw'                   => $raw,
-                'fileName'              => basename($filename),
-                'fileSize'              => $stream == null ? filesize($filename) : fstat($stream)['size'],
-                'canResume'             => false,
-                'startOver'             => false,
-                'unzip'                 => $unzip,
-                'tool'                  => 'apiv3',
-                'overwrite'             => $overwrite,
-                'title'                 => basename($filename),
-                'isSend'                => false,
-                'responseFormat'        => 'json',
-                'notify'                => $notify,
-                'clientCreatedDateUTC'  => $stream == null ? filectime($filename) : fstat($stream)['ctime'],
+                'method' => $method,
+                'raw' => $raw,
+                'fileName' => basename($filename),
+                'fileSize' => $stream == null ? filesize($filename) : fstat($stream)['size'],
+                'canResume' => false,
+                'startOver' => false,
+                'unzip' => $unzip,
+                'tool' => 'apiv3',
+                'overwrite' => $overwrite,
+                'title' => basename($filename),
+                'isSend' => false,
+                'responseFormat' => 'json',
+                'notify' => $notify,
+                'clientCreatedDateUTC' => $stream == null ? filectime($filename) : fstat($stream)['ctime'],
                 'clientModifiedDateUTC' => $stream == null ? filemtime($filename) : fstat($stream)['mtime'],
             ]
         );
@@ -372,11 +352,11 @@ class Client
     /**
      * Upload a file using a single HTTP POST.
      *
-     * @param  string  $filename  Name of file
-     * @param  string  $folderId  Id of the parent folder
-     * @param  bool  $unzip  Indicates that the upload is a Zip file, and contents must be extracted at the end of upload. The resulting files and directories will be placed in the target folder. If set to false, the ZIP file is uploaded as a single file. Default is false (optional)
-     * @param  bool  $overwrite  Indicates whether items with the same name will be overwritten or not (optional)
-     * @param  bool  $notify  Indicates whether users will be notified of this upload - based on folder preferences (optional)
+     * @param string $filename Name of file
+     * @param string $folderId Id of the parent folder
+     * @param bool $unzip Indicates that the upload is a Zip file, and contents must be extracted at the end of upload. The resulting files and directories will be placed in the target folder. If set to false, the ZIP file is uploaded as a single file. Default is false (optional)
+     * @param bool $overwrite Indicates whether items with the same name will be overwritten or not (optional)
+     * @param bool $notify Indicates whether users will be notified of this upload - based on folder preferences (optional)
      *
      * @return string
      */
@@ -395,26 +375,26 @@ class Client
             [
                 'multipart' => [
                     [
-                        'name'     => 'File1',
+                        'name' => 'File1',
                         'contents' => fopen($filename, 'r'),
                     ],
                 ],
             ]
         );
 
-        return (string) $response->getBody();
+        return (string)$response->getBody();
     }
 
     /**
      * Upload a file using multiple HTTP POSTs.
      *
-     * @param  mixed  $stream  Stream resource
-     * @param  string  $folderId  Id of the parent folder
-     * @param  string  $filename  Filename (optional)
-     * @param  bool  $unzip  Indicates that the upload is a Zip file, and contents must be extracted at the end of upload. The resulting files and directories will be placed in the target folder. If set to false, the ZIP file is uploaded as a single file. Default is false (optional)
-     * @param  bool  $overwrite  Indicates whether items with the same name will be overwritten or not (optional)
-     * @param  bool  $notify  Indicates whether users will be notified of this upload - based on folder preferences (optional)
-     * @param  int  $chunkSize  Maximum size of the individual HTTP posts in bytes
+     * @param mixed $stream Stream resource
+     * @param string $folderId Id of the parent folder
+     * @param string $filename Filename (optional)
+     * @param bool $unzip Indicates that the upload is a Zip file, and contents must be extracted at the end of upload. The resulting files and directories will be placed in the target folder. If set to false, the ZIP file is uploaded as a single file. Default is false (optional)
+     * @param bool $overwrite Indicates whether items with the same name will be overwritten or not (optional)
+     * @param bool $notify Indicates whether users will be notified of this upload - based on folder preferences (optional)
+     * @param int $chunkSize Maximum size of the individual HTTP posts in bytes
      *
      * @return string
      */
@@ -441,9 +421,9 @@ class Client
         while (!((strlen($data) < $chunkSize) || feof($stream))) {
             $parameters = $this->buildHttpQuery(
                 [
-                    'index'      => $index,
+                    'index' => $index,
                     'byteOffset' => $index * $chunkSize,
-                    'hash'       => md5($data),
+                    'hash' => md5($data),
                 ]
             );
 
@@ -461,11 +441,11 @@ class Client
         // Final chunk
         $parameters = $this->buildHttpQuery(
             [
-                'index'      => $index,
+                'index' => $index,
                 'byteOffset' => $index * $chunkSize,
-                'hash'       => md5($data),
-                'filehash'   => Psr7\hash(Psr7\stream_for($stream), 'md5'),
-                'finish'     => true,
+                'hash' => md5($data),
+                'filehash' => hash(Utils::streamFor($stream), 'md5'),
+                'finish' => true,
             ]
         );
 
@@ -475,8 +455,8 @@ class Client
     /**
      * Get Thumbnail of an item.
      *
-     * @param  string  $itemId  Item id
-     * @param  int  $size  Thumbnail size: THUMBNAIL_SIZE_M or THUMBNAIL_SIZE_L (optional)
+     * @param string $itemId Item id
+     * @param int $size Thumbnail size: THUMBNAIL_SIZE_M or THUMBNAIL_SIZE_L (optional)
      *
      * @return array
      */
@@ -484,7 +464,7 @@ class Client
     {
         $parameters = $this->buildHttpQuery(
             [
-                'size'     => $size,
+                'size' => $size,
                 'redirect' => false,
             ]
         );
@@ -495,7 +475,7 @@ class Client
     /**
      * Get browser link for an item.
      *
-     * @param  string  $itemId  Item id
+     * @param string $itemId Item id
      *
      * @return array
      */
@@ -507,8 +487,8 @@ class Client
     /**
      * Share Share for external user.
      *
-     * @param  array  $options  Share options
-     * @param  bool  $notify  Indicates whether user will be notified if item is downloaded (optional)
+     * @param array $options Share options
+     * @param bool $notify Indicates whether user will be notified if item is downloaded (optional)
      *
      * @return array
      */
@@ -527,8 +507,8 @@ class Client
     /**
      * Get AccessControl List for an item.
      *
-     * @param  string  $itemId  Id of an item
-     * @param  string  $userId  Id of an user
+     * @param string $itemId Id of an item
+     * @param string $userId Id of an user
      *
      * @return array
      */
@@ -544,7 +524,7 @@ class Client
     /**
      * Build API uri.
      *
-     * @param  string  $endpoint  API endpoint
+     * @param string $endpoint API endpoint
      *
      * @return string
      */
@@ -556,9 +536,9 @@ class Client
     /**
      * Make a request to the API.
      *
-     * @param  string  $method  HTTP Method
-     * @param  string  $endpoint  API endpoint
-     * @param  mixed|string|array  $json  POST body (optional)
+     * @param string $method HTTP Method
+     * @param string $endpoint API endpoint
+     * @param mixed|string|array $json POST body (optional)
      *
      * @return mixed
      * @throws Exception
@@ -575,7 +555,7 @@ class Client
             throw $this->determineException($exception);
         }
 
-        $body = (string) $response->getBody();
+        $body = (string)$response->getBody();
 
         return $this->jsonValidator($body) ? json_decode($body, true) : $body;
     }
@@ -583,7 +563,7 @@ class Client
     /**
      * Shorthand for GET-request.
      *
-     * @param  string  $endpoint  API endpoint
+     * @param string $endpoint API endpoint
      *
      * @return mixed
      */
@@ -595,8 +575,8 @@ class Client
     /**
      * Shorthand for POST-request.
      *
-     * @param  string  $endpoint  API endpoint
-     * @param  mixed|string|array  $json  POST body (optional)
+     * @param string $endpoint API endpoint
+     * @param mixed|string|array $json POST body (optional)
      *
      * @return mixed
      */
@@ -608,8 +588,8 @@ class Client
     /**
      * Shorthand for PATCH-request.
      *
-     * @param  string  $endpoint  API endpoint
-     * @param  mixed|string|array  $json  POST body (optional)
+     * @param string $endpoint API endpoint
+     * @param mixed|string|array $json POST body (optional)
      *
      * @return mixed
      */
@@ -621,7 +601,7 @@ class Client
     /**
      * Shorthand for DELETE-request.
      *
-     * @param  string  $endpoint  API endpoint
+     * @param string $endpoint API endpoint
      *
      * @return string|array
      */
@@ -633,8 +613,8 @@ class Client
     /**
      * Upload a chunk of data using HTTP POST body.
      *
-     * @param  string  $uri  Upload URI
-     * @param  string  $data  Contents to upload
+     * @param string $uri Upload URI
+     * @param string $data Contents to upload
      *
      * @return string|array
      */
@@ -646,13 +626,13 @@ class Client
             [
                 'headers' => [
                     'Content-Length' => strlen($data),
-                    'Content-Type'   => 'application/octet-stream',
+                    'Content-Type' => 'application/octet-stream',
                 ],
-                'body'    => $data,
+                'body' => $data,
             ]
         );
 
-        return (string) $response->getBody();
+        return (string)$response->getBody();
     }
 
     /**
@@ -660,8 +640,8 @@ class Client
      * from network streams).  This function repeatedly calls fread until the requested number of
      * bytes have been read or we've reached EOF.
      *
-     * @param  resource  $stream
-     * @param  int  $chunkSize
+     * @param resource $stream
+     * @param int $chunkSize
      *
      * @return string
      * @throws Exception
@@ -684,7 +664,7 @@ class Client
     /**
      * Handle ClientException.
      *
-     * @param  ClientException  $exception  ClientException
+     * @param ClientException $exception ClientException
      *
      * @return Exception
      */
@@ -700,7 +680,7 @@ class Client
     /**
      * Build HTTP query.
      *
-     * @param  array  $parameters  Query parameters
+     * @param array $parameters Query parameters
      *
      * @return string
      */
@@ -723,7 +703,7 @@ class Client
     /**
      * Validate JSON.
      *
-     * @param  mixed  $data  JSON variable
+     * @param mixed $data JSON variable
      *
      * @return bool
      */
