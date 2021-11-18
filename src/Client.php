@@ -5,8 +5,6 @@ namespace Citrix\Sharefile;
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
 use Citrix\Sharefile\Exceptions\BadRequest;
 use GuzzleHttp\Psr7\Utils;
 
@@ -15,6 +13,8 @@ class Client
     public array $token;
 
     public GuzzleClient $client;
+
+    private const HTTPS = 'https://';
 
     public const THUMBNAIL_SIZE_M = 75;
     public const THUMBNAIL_SIZE_L = 600;
@@ -25,90 +25,25 @@ class Client
     public const FOLDER_ALLSHARED = 'allshared';
 
     public const DEFAULT_CHUNK_SIZE = 8 * 1024 * 1024; // 8 megabytes
+    private string $subdomain;
+    private string $apicp;
 
-    /**
-     * Client constructor.
-     *
-     * @param string $hostname ShareFile hostname
-     * @param string $client_id OAuth2 client_id
-     * @param string $client_secret OAuth2 client_secret
-     * @param string $username ShareFile username
-     * @param string $password ShareFile password
-     * @param MockHandler|HandlerStack $handler Guzzle Handler
-     *
-     * @throws Exception
-     */
     public function __construct(
-        string $hostname,
-        string $client_id,
-        string $client_secret,
-        string $username,
-        string $password,
+        string $authToken,
+        string $subdomain,
+        string $apicp,
         $handler = null
     ) {
-        $response = $this->authenticate($hostname, $client_id, $client_secret, $username, $password, $handler);
-
-        if (!isset($response['access_token']) || !isset($response['subdomain'])) {
-            throw new Exception("Incorrect response from Authentication: 'access_token' or 'subdomain' is missing.");
-        }
-
-        $this->token = $response;
+        $this->subdomain = $subdomain;
+        $this->apicp = $apicp;
         $this->client = new GuzzleClient(
             [
                 'handler' => $handler,
                 'headers' => [
-                    'Authorization' => "Bearer {$this->token['access_token']}",
+                    'Authorization' => "Bearer {$authToken}",
                 ],
             ]
         );
-    }
-
-    /**
-     * ShareFile authentication using username/password.
-     *
-     * @param string $hostname ShareFile hostname
-     * @param string $client_id OAuth2 client_id
-     * @param string $client_secret OAuth2 client_secret
-     * @param string $username ShareFile username
-     * @param string $password ShareFile password
-     * @param MockHandler|HandlerStack $handler Guzzle Handler
-     *
-     * @return array
-     * @throws Exception
-     *
-     */
-    protected function authenticate(
-        string $hostname,
-        string $client_id,
-        string $client_secret,
-        string $username,
-        string $password,
-        $handler = null
-    ): array {
-        $uri = "https://{$hostname}/oauth/token";
-
-        $parameters = [
-            'grant_type' => 'password',
-            'client_id' => $client_id,
-            'client_secret' => $client_secret,
-            'username' => $username,
-            'password' => $password,
-        ];
-
-        try {
-            $client = new GuzzleClient(['handler' => $handler]);
-            $response = $client->post(
-                $uri,
-                ['form_params' => $parameters]
-            );
-        } catch (ClientException $exception) {
-            throw $exception;
-        }
-
-        if ($response->getStatusCode() === 200) {
-            return json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
-        }
-        throw new Exception('Authentication error', $response->getStatusCode());
     }
 
     /**
@@ -530,7 +465,7 @@ class Client
      */
     protected function buildUri(string $endpoint): string
     {
-        return "https://{$this->token['subdomain']}.sf-api.com/sf/v3/{$endpoint}";
+        return $this->buildBaseUrl() . '/sf/v3/' . $endpoint;
     }
 
     /**
@@ -716,5 +651,10 @@ class Client
         }
 
         return false;
+    }
+
+    private function buildBaseUrl(): string
+    {
+        return self::HTTPS . $this->subdomain . $this->apicp;
     }
 }
