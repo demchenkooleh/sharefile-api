@@ -713,7 +713,7 @@ class Client
 
     private function buildBaseUrl(): string
     {
-        return self::HTTPS . $this->subdomain . $this->apicp;
+        return self::HTTPS . $this->subdomain . '.' . $this->apicp;
     }
 
     protected function getQueryParameterForSearch(
