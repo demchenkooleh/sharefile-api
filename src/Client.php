@@ -10,6 +10,7 @@ use GuzzleHttp\Psr7\Utils;
 
 class Client
 {
+    public const SEARCH_MAX_RESULTS = 50;
     public array $token;
 
     public GuzzleClient $client;
@@ -456,6 +457,29 @@ class Client
         }
     }
 
+    public function search(
+        string $query,
+        int $maxResults = self::SEARCH_MAX_RESULTS,
+        string $parentId = null,
+        bool $homeOnly = false
+    ): array {
+        $queryOptions = [
+            'query' => $query,
+            'maxResults' => $maxResults,
+        ];
+        $endPoint = 'Items/Search';
+
+        if ($homeOnly === true) {
+            $queryOptions['homeFolderOnly'] = true;
+        }
+        if ($parentId !== null) {
+            $endPoint = "Items($parentId)/Search";
+        }
+        $parameters = $this->buildHttpQuery($queryOptions);
+
+        return $this->get("$endPoint?{$parameters}");
+    }
+
     /**
      * Build API uri.
      *
@@ -645,7 +669,7 @@ class Client
     protected function jsonValidator($data = null): bool
     {
         if (!empty($data)) {
-            @json_decode($data);
+            @json_decode($data, true, 512, JSON_THROW_ON_ERROR);
 
             return json_last_error() === JSON_ERROR_NONE;
         }
