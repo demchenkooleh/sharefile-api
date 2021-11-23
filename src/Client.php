@@ -11,6 +11,9 @@ use GuzzleHttp\Psr7\Utils;
 class Client
 {
     public const SEARCH_MAX_RESULTS = 50;
+    public const SEARCH_MAX_WAIT_TIME = 10;
+    public const ITEM_TYPE_FOLDER = 'Folder';
+    public const ITEM_TYPE_FILE = 'File';
     public array $token;
 
     public GuzzleClient $client;
@@ -428,7 +431,7 @@ class Client
      *
      * @return array
      */
-    public function createShare(array $options, $notify = false): array
+    public function createShare(array $options, bool $notify = false): array
     {
         $parameters = $this->buildHttpQuery(
             [
@@ -481,6 +484,37 @@ class Client
     }
 
     /**
+     * @param string $searchQuery
+     * @param string[] $parentIds
+     * @param array{resultCount:int, fromCount: int} $pagingOptions
+     * @param array{sortBy:string, ascending: int} $sortOptions
+     * @param string[] $itemTypes Type can be: "File","Folder"
+     * @param string[] $creatorIds
+     * @param int $timeoutInSeconds
+     * @return array|string
+     */
+    public function advancedSearch(
+        string $searchQuery,
+        array $parentIds = [],
+        array $pagingOptions = [],
+        array $sortOptions = [],
+        array $itemTypes = [self::ITEM_TYPE_FOLDER],
+        array $creatorIds = [],
+        int $timeoutInSeconds = self::SEARCH_MAX_WAIT_TIME
+
+    ): array {
+        $queryOptions = [
+            'Query' => $this->getQueryParameterForSearch($itemTypes, $parentIds, $creatorIds, $searchQuery),
+            'Paging' => $this->getPagingForSearchQuery($pagingOptions),
+            'Sort' => $this->getSortOrderForSearchQuery($sortOptions),
+            'TimeoutInSeconds' => $timeoutInSeconds,
+        ];
+
+
+        return $this->post('Items/AdvancedSearch', $queryOptions);
+    }
+
+    /**
      * Build API uri.
      *
      * @param string $endpoint API endpoint
@@ -506,7 +540,7 @@ class Client
     protected function request(string $method, string $endpoint, $json = null)
     {
         $uri = $this->buildUri($endpoint);
-        $options = $json != null ? ['json' => $json] : [];
+        $options = $json !== null ? ['json' => $json] : [];
 
         try {
             $response = $this->client->request($method, $uri, $options);
@@ -680,5 +714,50 @@ class Client
     private function buildBaseUrl(): string
     {
         return self::HTTPS . $this->subdomain . $this->apicp;
+    }
+
+    protected function getQueryParameterForSearch(
+        array $itemTypes,
+        array $parentIds,
+        array $creatorIds,
+        string $searchQuery
+    ): array {
+        return [
+            "ItemTypes" => $itemTypes,
+            "ParentID" => $parentIds,
+            "CreatorID" => $creatorIds,
+            "SearchQuery" => $searchQuery,
+            "CreateStartDate" => "",
+            "CreateEndDate" => "",
+            "ItemNameOnly" => false,
+        ];
+    }
+
+    /**
+     * @param array{resultCount:int, fromCount: int} $pagingOptions
+     * @return array|int[]
+     */
+    private function getPagingForSearchQuery(array $pagingOptions = []): array
+    {
+        $resultCount = $pagingOptions['resultCount'] ?? 50;
+        $fromCount = $pagingOptions['fromCount '] ?? 0;
+        return [
+            'Count' => (int)$resultCount,
+            'Skip' => (int)$fromCount,
+        ];
+    }
+
+    /**
+     * @param array{sortBy:string, ascending: int} $sortOptions
+     * @return array
+     */
+    private function getSortOrderForSearchQuery(array $sortOptions = []): array
+    {
+        $sortBy = $sortOptions['sortBy'] ?? "";
+        $ascending = $sortOptions['ascending '] ?? false;
+        return [
+            'SortBy' => (string)$sortBy,
+            'Ascending' => (bool)$ascending,
+        ];
     }
 }
