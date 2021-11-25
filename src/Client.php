@@ -125,6 +125,11 @@ class Client
         }
     }
 
+    public function getHomeFolder(): array
+    {
+        return $this->get('Items');
+    }
+
     /**
      * Get breadcrumps of an item.
      *
